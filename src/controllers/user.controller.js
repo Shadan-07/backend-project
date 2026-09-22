@@ -8,6 +8,9 @@ const generateAccessAndRefreshTokens = async(userId) => {
     try {
 
         const user = await User.findById(userId)
+        if (!user) {
+            throw new ApiError(404, "User not found while generating tokens")
+        }
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
@@ -17,7 +20,8 @@ const generateAccessAndRefreshTokens = async(userId) => {
         return { accessToken, refreshToken }
         
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
+        console.error("Token generation error:", error)
+        throw new ApiError(500, error?.message || "Something went wrong while generating access and refresh tokens")
     }
 }
 
@@ -110,7 +114,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // username or email (choose on basis of what, you want to give access)
 
-    if (!email || !username) {
+    if (!email && !username) {
         throw new ApiError(400, "email or username is required")
     }
 
@@ -181,8 +185,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     return res
     .status(200)
-    .clearCookie(accessToken, options)
-    .clearCookie(refreshToken, options)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
     .json(
         new ApiResponse(200, {}, "User logged Out Successfully!")
     )
