@@ -264,9 +264,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res
     .status(200)
-    .json(
+    .json(new ApiResponse(
         200, req.user, "Current User fetched Successfully!"
-    )
+    ))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -302,7 +302,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
-    if (!avatar.url) {
+    if (!avatar?.url) {
         throw new ApiError(400, "Something went wrong while uploading Avatar")
     }
 
@@ -333,11 +333,11 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    if (!coverImage.url) {
+    if (!coverImage?.url) {
         throw new ApiError(400, "Something went wrong while updating cover image")
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
